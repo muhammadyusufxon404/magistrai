@@ -1,72 +1,3 @@
-# # -*- coding: utf-8 -*-
-# # Ushbu kod Flask yordamida veb-server yaratadi va
-# # "MAGISTR AI" botini veb-interfeys orqali ishga tushiradi.
-
-# import os
-# import google.generativeai as genai
-# from flask import Flask, render_template, request, jsonify
-
-# # --- 1-QADAM: ILOVANI VA API KALITINI SOZLASH ---
-# app = Flask(__name__)
-
-# try:
-#     # API kalitini tizim o'zgaruvchisidan o'qish
-#     # Terminalda 'export GOOGLE_API_KEY="SIZNING_KALITINGIZ"' buyrug'ini bering.
-#     # Yoki test uchun keyingi qatorni izohdan chiqarib, kalitni to'g'ridan-to'g'ri yozing:
-#     # GOOGLE_API_KEY = "O‘Z_API_KALITINGIZNI_SHU_YERGA_QO‘YING"
-#     GOOGLE_API_KEY = "AIzaSyDeiBvSI8aXD6YZUHSAUTgYDaDAVQ3NYA4"
-#     genai.configure(api_key=GOOGLE_API_KEY)
-# except KeyError:
-#     print("Xatolik: GOOGLE_API_KEY tizim o'zgaruvchisi topilmadi.")
-#     exit()
-
-# # --- 2-QADAM: MODELNI SOZLASH ---
-# # Bu yerda biz botning "xarakteri" va vazifasini belgilaymiz.
-# system_instruction = """Sen "MAGISTR AI" nomli sun'iy intellekt yordamchisan.
-# Sening asosiy vazifang - O'zbekistondagi oliy o'quv yurtlariga kirishga tayyorlanayotgan abituriyentlarga yordam berish.
-# Sen fizika, kimyo, biologiya, matematika va tarix fanlari bo'yicha ilmiy nazariyalarni, qonuniyatlarni va formulalarni oddiy, tushunarli va qiziqarli tilda izohlab berasan.
-# Javoblaring aniq, ilmiy asoslangan va abituriyentlarga ruhlantiruvchi, motivatsiya beradigan bo'lishi kerak.
-# Murakkab mavzularni sodda misollar bilan tushuntir. Suhbatni do'stona va professionallikni saqlagan holda olib bor.
-# """
-
-# model = genai.GenerativeModel(
-#     model_name='gemini-2.0-flash',
-#     system_instruction=system_instruction
-# )
-# chat = model.start_chat(history=[])
-
-# # --- 3-QADAM: VEB-SAHIFA YO'NALISHLARI (ROUTES) ---
-
-# @app.route("/")
-# def index():
-#     """Bosh sahifani (index.html) ochib beradi."""
-#     return render_template("index.html")
-
-# @app.route("/chat", methods=["POST"])
-# def handle_chat():
-#     """Foydalanuvchi xabarini qabul qilib, bot javobini qaytaradi."""
-#     try:
-#         user_message = request.json["message"]
-        
-#         if not user_message.strip():
-#             return jsonify({"error": "Bo'sh xabar yuborish mumkin emas."}), 400
-
-#         # Modelga so'rov yuborish
-#         response = chat.send_message(user_message)
-        
-#         # Javobni JSON formatida qaytarish
-#         return jsonify({"response": response.text})
-
-#     except Exception as e:
-#         print(f"Xatolik yuz berdi: {e}")
-#         return jsonify({"error": "Model bilan bog'lanishda xatolik yuz berdi."}), 500
-
-# # --- 4-QADAM: SERVERNI ISHGA TUSHIRISH ---
-# if __name__ == "__main__":
-#     # debug=True - kod o'zgarganda server avtomatik qayta ishga tushadi.
-#     # Ishga tushirishdan oldin debug=False ga o'zgartirish tavsiya etiladi.
-#     app.run(debug=True)
-# -*- coding: utf-8 -*-
 import os
 import google.generativeai as genai
 from flask import Flask, render_template, request, jsonify, session
@@ -79,7 +10,7 @@ GOOGLE_API_KEY = "AIzaSyDeiBvSI8aXD6YZUHSAUTgYDaDAVQ3NYA4"
 genai.configure(api_key=GOOGLE_API_KEY)
 
 # --- Modelni sozlash ---
-system_instruction = system_instruction = """
+system_instruction = """
 Sen "MAGISTR AI" nomli sun'iy intellekt yordamchisan.
 Sening asosiy vazifang - O'zbekistondagi abituriyentlarga va "MAGISTR" o‘quv markazi mijozlariga yordam berish.
 
@@ -143,3 +74,4 @@ def handle_chat():
 
 if __name__ == "__main__":
     app.run(debug=True)
+

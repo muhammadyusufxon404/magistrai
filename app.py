@@ -1,6 +1,6 @@
 import os
 import google.generativeai as genai
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, send_from_directory
 
 app = Flask(__name__)
 app.secret_key = "super_secret_key"  # Session ishlashi uchun
@@ -51,6 +51,13 @@ chat = model.start_chat(history=[])
 def index():
     return render_template("index.html")
 
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(
+        os.path.join(app.root_path, 'static'),
+        'favicon.ico',
+        mimetype='image/vnd.microsoft.icon'
+
 @app.route("/chat", methods=["POST"])
 def handle_chat():
     try:
@@ -74,4 +81,5 @@ def handle_chat():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 

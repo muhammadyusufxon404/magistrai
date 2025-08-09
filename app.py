@@ -51,10 +51,6 @@ chat = model.start_chat(history=[])
 def index():
     return render_template("index.html")
 
-@app.route('/favicon.ico')
-def favicon():
-    return '', 204
-
 @app.route("/chat", methods=["POST"])
 def handle_chat():
     try:
@@ -78,6 +74,7 @@ def handle_chat():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 

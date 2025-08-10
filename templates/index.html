@@ -4,43 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MAGISTR AI</title>
-
-    <!-- Bo‘sh favicon link -->
-    <link rel="icon" href="data:,">
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- CSS faylini ulash -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="chat-container">
-        <header class="chat-header">
-            <h1>🤖 MAGISTR AI</h1>
-            <p>Abituriyentlar uchun sizning shaxsiy yordamchingiz</p>
-        </header>
-        <main class="chat-box" id="chat-box">
-            <!-- Botning birinchi xabari -->
-            <div class="message bot-message">
-                <div class="message-content">
-                    Salom! Men MAGISTR AI. Fizika, kimyo, biologiya, matematika yoki boshqa fanlar bo‘yicha savollaringiz bormi? Bemalol so‘rang!
-                </div>
-            </div>
-        </main>
-        <footer class="chat-footer">
-            <form id="chat-form" class="chat-form">
-                <input type="text" id="user-input" placeholder="Savolingizni yozing..." autocomplete="off" required>
-                <button type="submit" id="send-button" aria-label="Yuborish">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                </button>
-            </form>
-        </footer>
+        <h2>MAGISTR AI</h2>
+        <div id="chat-box"></div>
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Savolingizni kiriting...">
+            <button onclick="sendMessage()">Yuborish</button>
+        </div>
     </div>
-
-    <!-- JavaScript faylini ulash -->
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

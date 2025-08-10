@@ -72,7 +72,6 @@
 # if __name__ == "__main__":
 #     port = int(os.environ.get("PORT", 5000))
 #     app.run(host="0.0.0.0", port=port)
-
 import os
 import json
 import requests
@@ -255,7 +254,7 @@ HTML_TEMPLATE = """
             addMessageToChat('user', userMessageText);
             input.value = '';
             input.style.height = 'auto'; // Reset textarea height
-            input.blur(); // Mobil klaviaturani yopish uchun
+            input.focus(); // Xabar yuborilgandan so'ng darhol fokusni qaytaramiz
 
             showLoadingIndicator();
             isLoading = true;
@@ -289,6 +288,8 @@ HTML_TEMPLATE = """
             } finally {
                 isLoading = false;
                 sendButton.disabled = false;
+                // Har ehtimolga qarshi, javob kelgandan keyin ham fokusni qaytaramiz
+                input.focus(); 
                 scrollToBottom();
             }
         });

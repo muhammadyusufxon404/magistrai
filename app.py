@@ -255,7 +255,8 @@ HTML_TEMPLATE = """
             addMessageToChat('user', userMessageText);
             input.value = '';
             input.style.height = 'auto'; // Reset textarea height
-            
+            input.blur(); // Mobil klaviaturani yopish uchun
+
             showLoadingIndicator();
             isLoading = true;
             sendButton.disabled = true;

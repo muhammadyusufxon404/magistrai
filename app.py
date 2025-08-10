@@ -1,9 +1,9 @@
 import os
 import google.generativeai as genai
-from flask import Flask, render_template, request, jsonify, session, send_from_directory
+from flask import Flask, render_template, request, jsonify, session
 
 app = Flask(__name__)
-app.secret_key = "super_secret_key"  # Session ishlashi uchun
+app.secret_key = "super_secret_key"
 
 # --- API kalitini sozlash ---
 GOOGLE_API_KEY = "AIzaSyDeiBvSI8aXD6YZUHSAUTgYDaDAVQ3NYA4"
@@ -46,7 +46,6 @@ model = genai.GenerativeModel(
 )
 chat = model.start_chat(history=[])
 
-# --- Yo'nalishlar ---
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -59,12 +58,10 @@ def handle_chat():
         if not user_message.strip():
             return jsonify({"error": "Bo'sh xabar yuborish mumkin emas."}), 400
 
-        # Agar foydalanuvchi birinchi xabar yuborayotgan bo‘lsa
         if not session.get("has_sent_first_message"):
             session["has_sent_first_message"] = True
             return jsonify({"response": "SALOM, men MAGISTR AI man. Sizga qanday yordam bera olaman?"})
 
-        # Qolgan xabarlar uchun model javobi
         response = chat.send_message(user_message)
         return jsonify({"response": response.text})
 
@@ -73,9 +70,5 @@ def handle_chat():
         return jsonify({"error": "Model bilan bog'lanishda xatolik yuz berdi."}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
-
-
-
-
-
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)

@@ -30,13 +30,17 @@ MAGISTR o‘quv markazi haqida ma’lumot:
 O‘quv markaz filiallari haqida so‘ralganda quyidagicha javob ber:
 "Magistr o‘quv markazining quyidagi filiallari mavjud: Guliston filiali, Katlavondagi Asosiy bino, Katlavondagi English CENTRE, Shirinda filial va Sirdaryo hamda boshqa hududlarda filiallar faoliyat yuritadi."
 
-Rahbar:
-- Odiljon Abduahadov
+Rahbarlar haqida so‘ralganda quyidagicha javob ber:
+"Magistr o‘quv markazi asoschisi va rahbari — Odiljon Abduahadov. Katlavondagi filiallar rahbari — Orifjon Abduahadov. Guliston filiali rahbari esa — Hulkar Yusupova."
 
-Aloqa ma’lumotlari (MAGISTR o‘quv markazi):
-- Telefon: +998 99 810 34 34
-- Instagram: magistr_guliston1
-- Telegram: magistr_guliston
+Aloqa ma’lumotlari (MAGISTR o‘quv markazi filiallari raqamlari):
+- Guliston filiali: +998 99 810 34 34
+- Asosiy markaz: +998 99 477 67 57
+- English CENTRE: +998 95 022 34 34
+
+Ijtimoiy tarmoqlar:  
+- Instagram: magistr_guliston1, magistr_edu_  
+- Telegram: magistr_guliston, magistr_boyovut
 
 Yaratuvchi:
 - Ushbu sun’iy intellektni Yusupov Muhammadyusufxon yaratgan.
@@ -348,4 +352,5 @@ def handle_chat():
 if __name__ == "__main__":
     # Illovani ishga tushirish
     app.run(host='0.0.0.0', port=5000, debug=False)
+
 

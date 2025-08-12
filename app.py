@@ -12,6 +12,7 @@ app = Flask(__name__)
 app.secret_key = "super_secret_key"
 
 # --- API kalitini sozlash ---
+# Sizning haqiqiy API kalitingizni bu yerga joylashtiring
 GOOGLE_API_KEY = "AIzaSyDeiBvSI8aXD6YZUHSAUTgYDaDAVQ3NYA4"
 genai.configure(api_key=GOOGLE_API_KEY)
 
@@ -38,8 +39,8 @@ Aloqa ma’lumotlari (MAGISTR o‘quv markazi filiallari raqamlari):
 - Asosiy markaz: +998 99 477 67 57
 - English CENTRE: +998 95 022 34 34
 
-Ijtimoiy tarmoqlar:  
-- Instagram: magistr_guliston1, magistr_edu_  
+Ijtimoiy tarmoqlar:  
+- Instagram: magistr_guliston1, magistr_edu_  
 - Telegram: magistr_guliston, magistr_boyovut
 
 Yaratuvchi:
@@ -206,7 +207,14 @@ HTML_TEMPLATE = """
     </header>
 
     <main id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 max-w-2xl mx-auto w-full">
-        </main>
+        <div class="flex justify-start space-x-2 max-w-full">
+            <div class="p-3 rounded-2xl max-w-sm lg:max-w-md shadow-lg bot-message message-fade-in">
+                Men Magistr AI'man. Sizga qanday yordam bera olaman?
+                <br>
+                Instagram: magistr_guliston1
+            </div>
+        </div>
+    </main>
 
     <footer class="p-4 bg-gray-800 shadow-lg">
         <div class="container mx-auto max-w-2xl">
@@ -247,7 +255,6 @@ HTML_TEMPLATE = """
         const sendButton = document.getElementById('send-btn');
         const imagePreviewContainer = document.getElementById('image-preview-container');
         let isLoading = false;
-        let isFirstMessage = true;
         let selectedFiles = [];
 
         // Image upload change event
@@ -324,10 +331,6 @@ HTML_TEMPLATE = """
                 const data = await response.json();
                 
                 hideLoadingIndicator();
-                
-                if (isFirstMessage) {
-                    isFirstMessage = false;
-                }
                 
                 addMessageToChat('bot', data.response);
 
@@ -434,21 +437,6 @@ HTML_TEMPLATE = """
             }
         });
         
-        // Initial welcome message from the server on page load
-        window.addEventListener('load', () => {
-            fetch('/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: "salom" })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.response) {
-                    addMessageToChat('bot', data.response);
-                    scrollToBottom();
-                }
-            });
-        });
     </script>
 </body>
 </html>
@@ -468,6 +456,7 @@ def create_image_part(image_data, mime_type):
 # Asosiy sahifa yo'nalishi
 @app.route("/")
 def index():
+    # Sahifa yuklanganda hech qanday so'rov jo'natilmaydi, birinchi xabar HTMLda bo'ladi.
     return render_template_string(HTML_TEMPLATE)
 
 # Chat xabarlarini qayta ishlash uchun yo'nalish
@@ -484,38 +473,33 @@ def handle_chat():
         if not user_message and not image_files:
             return jsonify({"error": "Bo'sh xabar yoki rasm yuborish mumkin emas."}), 400
 
-        # Birinchi xabar uchun maxsus javobni tekshirish
-        if not session.get("has_sent_first_message"):
-            session["has_sent_first_message"] = True
-            response_text = "SALOM, men MK CHECKER man. Sizga qanday yordam bera olaman?"
-        else:
-            # Modelga yuborish uchun kontentni yaratish
-            content_parts = []
-            if user_message:
-                content_parts.append(user_message)
+        # Modelga yuborish uchun kontentni yaratish
+        content_parts = []
+        if user_message:
+            content_parts.append(user_message)
 
-            for image_file in image_files:
-                # Rasmni base64 formatiga o'tkazish
-                base64_image = base64.b64encode(image_file.read()).decode('utf-8')
-                mime_type = image_file.mimetype or "image/jpeg"
-                content_parts.append(create_image_part(base64_image, mime_type))
-            
-            # Har bir so'rovda chat tarixini modelga yuborish
-            chat = model.start_chat(history=session['chat_history'])
-            response = chat.send_message(content_parts)
-            response_text = response.text
-            
-            # Chat tarixini yangilash
-            user_parts = []
-            if user_message:
-                user_parts.append({"text": user_message})
-            for image_file in image_files:
-                base64_image = base64.b64encode(image_file.read()).decode('utf-8')
-                mime_type = image_file.mimetype or "image/jpeg"
-                user_parts.append(create_image_part(base64_image, mime_type))
-            session['chat_history'].append({"role": "user", "parts": user_parts})
-            
-            session['chat_history'].append({"role": "model", "parts": [{"text": response_text}]})
+        for image_file in image_files:
+            # Rasmni base64 formatiga o'tkazish
+            base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+            mime_type = image_file.mimetype or "image/jpeg"
+            content_parts.append(create_image_part(base64_image, mime_type))
+        
+        # Har bir so'rovda chat tarixini modelga yuborish
+        chat = model.start_chat(history=session['chat_history'])
+        response = chat.send_message(content_parts)
+        response_text = response.text
+        
+        # Chat tarixini yangilash
+        user_parts = []
+        if user_message:
+            user_parts.append({"text": user_message})
+        for image_file in image_files:
+            base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+            mime_type = image_file.mimetype or "image/jpeg"
+            user_parts.append(create_image_part(base64_image, mime_type))
+        session['chat_history'].append({"role": "user", "parts": user_parts})
+        
+        session['chat_history'].append({"role": "model", "parts": [{"text": response_text}]})
         
         return jsonify({"response": response_text})
 
@@ -526,4 +510,3 @@ def handle_chat():
 if __name__ == "__main__":
     # Illovani ishga tushirish
     app.run(host='0.0.0.0', port=5000, debug=False)
-

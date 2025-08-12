@@ -3,6 +3,8 @@ import json
 import requests
 import google.generativeai as genai
 from flask import Flask, request, jsonify, render_template_string, session
+import base64
+import mimetypes
 
 # Flask ilovasini yaratish
 app = Flask(__name__)
@@ -10,12 +12,10 @@ app = Flask(__name__)
 app.secret_key = "super_secret_key"
 
 # --- API kalitini sozlash ---
-# API kaliti Canvas muhiti tomonidan avtomatik ta'minlanadi
 GOOGLE_API_KEY = "AIzaSyDeiBvSI8aXD6YZUHSAUTgYDaDAVQ3NYA4"
 genai.configure(api_key=GOOGLE_API_KEY)
 
 # --- Modelni sozlash ---
-# Siz taqdim etgan tizim yo'riqnomasi
 system_instruction = """
 Sen "MAGISTR AI" nomli sun'iy intellekt yordamchisan.
 Sening asosiy vazifang - O'zbekistondagi abituriyentlarga va "MAGISTR" o‘quv markazi o‘quvchilariga yordam berish.
@@ -60,15 +60,14 @@ model = genai.GenerativeModel(
     system_instruction=system_instruction
 )
 
-# The HTML template for the chat interface. This is an all-in-one approach for simplicity.
+# Dark mode HTML template
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Magistr AI Chat</title>
-    <!-- Tailwind CSS for styling -->
+    <title>MK CHECKER</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -80,8 +79,8 @@ HTML_TEMPLATE = """
             width: 10px;
             height: 10px;
             border-radius: 5px;
-            background-color: #9880ff;
-            color: #9880ff;
+            background-color: #6d28d9; /* Indigo-700 */
+            color: #6d28d9;
             animation: dotFlashing 1s infinite linear alternate;
             animation-delay: 0s;
         }
@@ -96,8 +95,8 @@ HTML_TEMPLATE = """
             width: 10px;
             height: 10px;
             border-radius: 5px;
-            background-color: #9880ff;
-            color: #9880ff;
+            background-color: #6d28d9;
+            color: #6d28d9;
             animation: dotFlashing 1s infinite alternate;
             animation-delay: 0.5s;
         }
@@ -106,17 +105,17 @@ HTML_TEMPLATE = """
             width: 10px;
             height: 10px;
             border-radius: 5px;
-            background-color: #9880ff;
-            color: #9880ff;
+            background-color: #6d28d9;
+            color: #6d28d9;
             animation: dotFlashing 1s infinite alternate;
             animation-delay: 1s;
         }
         @keyframes dotFlashing {
             0% {
-                background-color: #9880ff;
+                background-color: #6d28d9;
             }
             50%, 100% {
-                background-color: #6944ff;
+                background-color: #4c1d95; /* Indigo-900 */
             }
         }
         .message-fade-in {
@@ -132,41 +131,109 @@ HTML_TEMPLATE = """
                 transform: translateY(0);
             }
         }
+        #image-preview-container {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .image-preview {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #475569; /* Slate-600 */
+        }
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .remove-image {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .user-message {
+            background-color: #3b82f6; /* Blue-500 */
+            color: white;
+            border-radius: 1rem 0.25rem 1rem 1rem;
+        }
+        .bot-message {
+            background-color: #334155; /* Slate-700 */
+            color: white;
+            border-radius: 0.25rem 1rem 1rem 1rem;
+        }
+        /* Markdown support styles */
+        .bot-message strong, .bot-message b {
+            font-weight: bold;
+        }
+        .bot-message em, .bot-message i {
+            font-style: italic;
+        }
+        .bot-message ul {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+        .bot-message li {
+            margin-bottom: 5px;
+        }
+        .bot-message h1, .bot-message h2, .bot-message h3 {
+            font-size: 1.25em;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
-<body class="flex flex-col h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
+<body class="flex flex-col h-screen bg-gray-900 text-gray-200 font-sans">
 
-    <!-- Header -->
-    <header class="p-4 bg-white dark:bg-gray-800 shadow-md">
+    <header class="p-4 bg-gray-800 shadow-lg">
         <div class="container mx-auto max-w-2xl">
-            <h1 class="text-2xl font-bold text-center">Magistr AI Chat</h1>
+            <h1 class="text-2xl font-bold text-center text-indigo-400">MK CHECKER</h1>
         </div>
     </header>
 
-    <!-- Chat Messages Container -->
     <main id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 max-w-2xl mx-auto w-full">
-        <!-- Messages will be dynamically added here -->
-    </main>
+        </main>
 
-    <!-- Chat Input Form -->
-    <footer class="p-4 bg-white dark:bg-gray-800 shadow-inner">
+    <footer class="p-4 bg-gray-800 shadow-lg">
         <div class="container mx-auto max-w-2xl">
-            <form id="chat-form" class="flex items-end space-x-2">
+            <div id="image-preview-container" class="mb-2"></div>
+            
+            <form id="chat-form" class="flex items-end space-x-2" enctype="multipart/form-data">
+                <label class="cursor-pointer flex-shrink-0">
+                    <input type="file" id="image-upload" accept="image/*" class="hidden" multiple>
+                    <div class="p-3 bg-gray-700 text-indigo-400 rounded-xl hover:bg-gray-600 transition-colors duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                    </div>
+                </label>
+
                 <textarea
                     id="user-input"
-                    class="flex-1 p-3 rounded-xl bg-gray-200 dark:bg-gray-700 resize-none outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                    class="flex-1 p-3 rounded-xl bg-gray-700 text-gray-200 resize-none outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
                     placeholder="Xabar yozing..."
                     rows="1"
                     oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"'
                 ></textarea>
+                
                 <button
                     type="submit"
                     id="send-btn"
-                    class="bg-blue-600 text-white p-3 rounded-xl font-semibold shadow-md hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="flex-shrink-0 bg-indigo-600 text-white p-3 rounded-xl font-semibold shadow-md hover:bg-indigo-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send">
-                        <path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M15 15l-4 4"/>
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M15 15l-4 4"/></svg>
                 </button>
             </form>
         </div>
@@ -175,31 +242,79 @@ HTML_TEMPLATE = """
     <script>
         const form = document.getElementById('chat-form');
         const input = document.getElementById('user-input');
+        const imageInput = document.getElementById('image-upload');
         const chatContainer = document.getElementById('chat-container');
         const sendButton = document.getElementById('send-btn');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
         let isLoading = false;
         let isFirstMessage = true;
+        let selectedFiles = [];
+
+        // Image upload change event
+        imageInput.addEventListener('change', () => {
+            selectedFiles = [...selectedFiles, ...Array.from(imageInput.files)];
+            imageInput.value = null; // Clear input to allow re-selection of the same file
+            updateImagePreview();
+        });
+
+        // Update image preview
+        function updateImagePreview() {
+            imagePreviewContainer.innerHTML = '';
+            selectedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const previewDiv = document.createElement('div');
+                    previewDiv.className = 'image-preview';
+                    previewDiv.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                        <span class="remove-image" data-index="${index}">&times;</span>
+                    `;
+                    imagePreviewContainer.appendChild(previewDiv);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
         
-        // Function to handle the form submission
+        // Remove image from preview
+        imagePreviewContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-image')) {
+                const index = e.target.getAttribute('data-index');
+                selectedFiles.splice(index, 1);
+                updateImagePreview();
+            }
+        });
+
+        // Form submit
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const userMessageText = input.value.trim();
-            if (!userMessageText || isLoading) return;
+            const imagesToUpload = selectedFiles;
 
-            addMessageToChat('user', userMessageText);
+            if ((!userMessageText && imagesToUpload.length === 0) || isLoading) {
+                return;
+            }
+
+            addMessageToChat('user', userMessageText, imagesToUpload);
             input.value = '';
-            input.style.height = 'auto'; // Reset textarea height
-            input.focus(); // Xabar yuborilgandan so'ng darhol fokusni qaytaramiz
+            input.style.height = 'auto';
+            selectedFiles = []; // Clear selected files
+            imagePreviewContainer.innerHTML = '';
+            input.focus();
 
             showLoadingIndicator();
             isLoading = true;
             sendButton.disabled = true;
 
+            const formData = new FormData();
+            formData.append('message', userMessageText);
+            imagesToUpload.forEach(file => {
+                formData.append('images', file);
+            });
+
             try {
                 const response = await fetch('/chat', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: userMessageText })
+                    body: formData,
                 });
 
                 if (!response.ok) {
@@ -223,33 +338,65 @@ HTML_TEMPLATE = """
             } finally {
                 isLoading = false;
                 sendButton.disabled = false;
-                // Har ehtimolga qarshi, javob kelgandan keyin ham fokusni qaytaramiz
                 input.focus(); 
                 scrollToBottom();
             }
         });
 
-        // Add message to the chat display
-        function addMessageToChat(sender, text) {
+        // --- YANGI FUNKSIYA: MARKDOWN BELGILARINI HTMLGA O'TKAZISH ---
+        function parseMarkdown(text) {
+            // Qalin yozuv (***text***, **text**)
+            text = text.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            // Egik yozuv (*text*, _text_)
+            text = text.replace(/(?<!\*)\*(?!\*)(.*?)\*(?!\*)/g, '<em>$1</em>');
+            text = text.replace(/_(.*?)_/g, '<em>$1</em>');
+            // Ro'yxatlar (-)
+            text = text.replace(/^- (.*)/gm, '<li>$1</li>');
+            if (text.includes('<li>')) {
+                text = `<ul>${text}</ul>`;
+            }
+            // Yangi qator (\\n)
+            text = text.replace(/\\n/g, '<br>');
+            return text;
+        }
+
+        // Add message to the chat display, now with image support
+        function addMessageToChat(sender, text, imageFiles = []) {
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('flex', 'space-x-2', 'max-w-full', 'message-fade-in');
             
+            let contentHtml = '';
+            if (imageFiles.length > 0) {
+                contentHtml += '<div class="flex flex-wrap gap-2 mb-2">';
+                imageFiles.forEach(file => {
+                    const imageUrl = URL.createObjectURL(file);
+                    contentHtml += `<img src="${imageUrl}" alt="Yuborilgan rasm" class="rounded-lg max-w-full h-auto" style="max-height: 150px;">`;
+                });
+                contentHtml += '</div>';
+            }
+            if (text) {
+                const formattedText = parseMarkdown(text);
+                contentHtml += `<div>${formattedText}</div>`;
+            }
+
             if (sender === 'user') {
                 messageDiv.classList.add('justify-end');
                 messageDiv.innerHTML = `
-                    <div class="p-3 rounded-2xl max-w-sm lg:max-w-md shadow-lg bg-blue-500 text-white rounded-br-md">
-                        ${text}
+                    <div class="p-3 rounded-2xl max-w-sm lg:max-w-md shadow-lg user-message">
+                        ${contentHtml}
                     </div>
                 `;
             } else {
                 messageDiv.classList.add('justify-start');
                 messageDiv.innerHTML = `
-                    <div class="p-3 rounded-2xl max-w-sm lg:max-w-md shadow-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-md">
-                        ${text}
+                    <div class="p-3 rounded-2xl max-w-sm lg:max-w-md shadow-lg bot-message">
+                        ${contentHtml}
                     </div>
                 `;
             }
             chatContainer.appendChild(messageDiv);
+            scrollToBottom();
         }
 
         // Show a loading indicator
@@ -258,7 +405,7 @@ HTML_TEMPLATE = """
             loadingDiv.id = 'loading-indicator';
             loadingDiv.classList.add('flex', 'justify-start');
             loadingDiv.innerHTML = `
-                <div class="p-3 bg-gray-200 dark:bg-gray-700 rounded-2xl rounded-bl-md max-w-sm shadow-lg">
+                <div class="p-3 bg-gray-700 rounded-2xl rounded-bl-md max-w-sm shadow-lg">
                     <div class="dot-flashing"></div>
                 </div>
             `;
@@ -292,7 +439,7 @@ HTML_TEMPLATE = """
             fetch('/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: "salom" }) // Birinchi xabar
+                body: JSON.stringify({ message: "salom" })
             })
             .then(response => response.json())
             .then(data => {
@@ -307,6 +454,17 @@ HTML_TEMPLATE = """
 </html>
 """
 
+def create_image_part(image_data, mime_type):
+    """
+    Rasm ma'lumotlarini modelga mos formatga o'tkazadi.
+    """
+    return {
+        "inline_data": {
+            "data": image_data,
+            "mime_type": mime_type
+        }
+    }
+
 # Asosiy sahifa yo'nalishi
 @app.route("/")
 def index():
@@ -319,28 +477,44 @@ def handle_chat():
         # Chat obyektini sessiondan olish, agar bo'lmasa yangisini yaratish
         if 'chat_history' not in session:
             session['chat_history'] = []
-        
-        # Foydalanuvchi xabarini olish
-        user_message = request.json["message"]
 
-        if not user_message.strip():
-            return jsonify({"error": "Bo'sh xabar yuborish mumkin emas."}), 400
+        user_message = request.form.get("message", "").strip()
+        image_files = request.files.getlist("images")
+        
+        if not user_message and not image_files:
+            return jsonify({"error": "Bo'sh xabar yoki rasm yuborish mumkin emas."}), 400
 
         # Birinchi xabar uchun maxsus javobni tekshirish
         if not session.get("has_sent_first_message"):
             session["has_sent_first_message"] = True
-            # Sizning birinchi xabar uchun belgilagan matningiz
-            response_text = "SALOM, men MAGISTR AI man. Sizga qanday yordam bera olaman?"
+            response_text = "SALOM, men MK CHECKER man. Sizga qanday yordam bera olaman?"
         else:
-            # Model bilan aloqa o'rnatish
+            # Modelga yuborish uchun kontentni yaratish
+            content_parts = []
+            if user_message:
+                content_parts.append(user_message)
+
+            for image_file in image_files:
+                # Rasmni base64 formatiga o'tkazish
+                base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+                mime_type = image_file.mimetype or "image/jpeg"
+                content_parts.append(create_image_part(base64_image, mime_type))
+            
             # Har bir so'rovda chat tarixini modelga yuborish
-            chat_history = session['chat_history']
-            chat = model.start_chat(history=chat_history)
-            response = chat.send_message(user_message)
+            chat = model.start_chat(history=session['chat_history'])
+            response = chat.send_message(content_parts)
             response_text = response.text
             
             # Chat tarixini yangilash
-            session['chat_history'].append({"role": "user", "parts": [{"text": user_message}]})
+            user_parts = []
+            if user_message:
+                user_parts.append({"text": user_message})
+            for image_file in image_files:
+                base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+                mime_type = image_file.mimetype or "image/jpeg"
+                user_parts.append(create_image_part(base64_image, mime_type))
+            session['chat_history'].append({"role": "user", "parts": user_parts})
+            
             session['chat_history'].append({"role": "model", "parts": [{"text": response_text}]})
         
         return jsonify({"response": response_text})
@@ -352,5 +526,3 @@ def handle_chat():
 if __name__ == "__main__":
     # Illovani ishga tushirish
     app.run(host='0.0.0.0', port=5000, debug=False)
-
-

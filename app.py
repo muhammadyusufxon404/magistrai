@@ -67,7 +67,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MK CHECKER</title>
+    <title>MAGISTR AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -201,7 +201,7 @@ HTML_TEMPLATE = """
 
     <header class="p-4 bg-gray-800 shadow-lg">
         <div class="container mx-auto max-w-2xl">
-            <h1 class="text-2xl font-bold text-center text-indigo-400">MK CHECKER</h1>
+            <h1 class="text-2xl font-bold text-center text-indigo-400">MAGISTR AI</h1>
         </div>
     </header>
 
@@ -526,3 +526,4 @@ def handle_chat():
 if __name__ == "__main__":
     # Illovani ishga tushirish
     app.run(host='0.0.0.0', port=5000, debug=False)
+

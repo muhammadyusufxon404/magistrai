@@ -56,6 +56,7 @@ Yaratuvchi:
 Ushbu sun’iy intellektni Yusupov Muhammadyusufxon yaratgan.
 
 Funksiyalar:
+Agar rasm tasvirlab bersa uni yasab berib foydalanuvchiga yubor
 Agar foydalanuvchi oddiy rasm yuborsa, rasmni tasvirlab ber.
 Agar foydalanuvchi ona tilidan matn (essay yoki writing) yuborsa, uni milliy sertifikat (A+, A, B+, B) mezonlari asosida baholab ber.
 Agar foydalanuvchi ingliz tilidan essay yoki writing matn yuborsa, uni IELTS (0–9 band) va CEFR (A1–C2) mezonlari asosida baholab ber.
@@ -524,4 +525,5 @@ def handle_chat():
 if __name__ == "__main__":
     # Illovani ishga tushirish
     app.run(host='0.0.0.0', port=5000, debug=False)
+
 

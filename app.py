@@ -13,7 +13,7 @@ app.secret_key = "super_secret_key"
 
 # --- API kalitini sozlash ---
 # Sizning haqiqiy API kalitingizni bu yerga joylashtiring
-GOOGLE_API_KEY = "AIzaSyDeiBvSI8aXD6YZUHSAUTgYDaDAVQ3NYA4"
+GOOGLE_API_KEY = "AIzaSyD4Oqlf8k8yxtundRhoqvl9CxN_biH0IsM"
 genai.configure(api_key=GOOGLE_API_KEY)
 
 # --- Modelni sozlash ---
@@ -525,6 +525,7 @@ def handle_chat():
 if __name__ == "__main__":
     # Illovani ishga tushirish
     app.run(host='0.0.0.0', port=5000, debug=False)
+
 
 
 
